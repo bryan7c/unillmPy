@@ -10,7 +10,7 @@ export const API_CONFIG = {
     },
     ollama: {
         apiKey: process.env.OLLAMA_API_KEY || "",
-        baseUrl: process.env.OLLAMA_BASE_URL || "https://api.ollama.com/v1/",
+        baseUrl: process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434/api",
     },
     grok: {
         apiKey: process.env.GROK_API_KEY || "",
