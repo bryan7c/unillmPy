@@ -12,4 +12,7 @@ services:
       - .:/app       # Monte o diretório atual no container
     env_file:
       - .env
-    command: python app.py  # Comando para rodar a aplicação; ajuste se necessário
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1 
+    command: flask run --host=0.0.0.0 --port=3000  # Comando para rodar a aplicação; ajuste se necessário
