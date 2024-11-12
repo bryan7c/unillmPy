@@ -1,4 +1,4 @@
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 
 class OllamaService:
     def __init__(self):
@@ -7,5 +7,6 @@ class OllamaService:
 
     def generate_text(self, input_text: str, options: dict = None) -> str:
         # Gera texto usando o modelo Ollama
-        llm = Ollama(model=self.model)
-        return llm.invoke(f'<system>\n{options.get("context", "")}\n</system>\n\n<user>\n{input_text}\n</user>')
+        llm = OllamaLLM(model=self.model)
+        context = options.get('context') if options else None
+        return llm.invoke(input_text, context=context)

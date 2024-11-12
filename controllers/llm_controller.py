@@ -11,6 +11,6 @@ def generate_text():
 
     try:
         result = llm_service.generate_text(input_text, options)
-        return jsonify({'result': result.replace('\n', ' ')})
+        return jsonify({'result': result})
     except Exception as error:
         return jsonify({'error': str(error)}), 500
