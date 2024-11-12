@@ -8,4 +8,4 @@ CORS(app)  # Habilita CORS para todas as rotas
 app.register_blueprint(llm_routes, url_prefix='/api/llm')
 
 if __name__ == '__main__':
-    app.run(port=3000)
+    app.run(host='0.0.0.0', port=3000)

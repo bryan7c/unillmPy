@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  unillm:
+    image: unillm
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3007:3000"  # Exponha a porta desejada
+    volumes:
+      - .:/app       # Monte o diretório atual no container
+    env_file:
+      - .env
+    command: python app.py  # Comando para rodar a aplicação; ajuste se necessário
