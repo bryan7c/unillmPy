@@ -13,4 +13,4 @@ def generate_text_route():
 # Rota para verificar o status do servidor
 @llm_routes.route("/status", methods=["GET"])
 def status():
-    return {"status": "Servidor está funcionando budega"}
+    return {"status": "Servidor está funcionando"}
