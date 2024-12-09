@@ -1,11 +1,16 @@
 import requests
 import logging
+import os
 from config import Config
 
 class OllamaService:
     def __init__(self):
         self.model = "llama3.1:latest"  # This matches exactly with what's available in Ollama
-        self.base_url = Config.OLLAMA_BASE_URL.rstrip('/')
+        # Force the use of host.docker.internal in Docker environment
+        if os.path.exists('/.dockerenv'):
+            self.base_url = 'http://host.docker.internal:11434/api'
+        else:
+            self.base_url = Config.OLLAMA_BASE_URL.rstrip('/')
         logging.info(f"Initializing OllamaService with base_url: {self.base_url}")
 
     def generate_text(self, input_text: str, options: dict = None) -> str:
@@ -21,8 +26,8 @@ class OllamaService:
             
             logging.info(f"Sending request to Ollama: URL={url}, payload={payload}")
             
-            # Make the request
-            response = requests.post(url, json=payload)
+            # Make the request with a longer timeout
+            response = requests.post(url, json=payload, timeout=30)
             
             # Log the response for debugging
             logging.info(f"Ollama response status: {response.status_code}")
