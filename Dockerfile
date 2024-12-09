@@ -18,7 +18,7 @@ COPY . .
 USER appuser
 
 # Exponha a porta que a aplicação utiliza
-EXPOSE 3000
+EXPOSE 3001
 
 # Comando para iniciar a aplicação
 CMD ["python", "app.py"]

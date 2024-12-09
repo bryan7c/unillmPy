@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3007:3000"  # Exponha a porta desejada
+      - "3007:3001"  # Exponha a porta desejada
     volumes:
       - .:/app       # Monte o diretório atual no container
     env_file:
@@ -15,5 +15,5 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1 
-    command: flask run --host=0.0.0.0 --port=3000  # Comando para rodar a aplicação; ajuste se necessário
+    command: flask run --host=0.0.0.0 --port=3001  # Comando para rodar a aplicação; ajuste se necessário
     restart: unless-stopped  # Política de reinício

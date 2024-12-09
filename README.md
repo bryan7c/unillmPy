@@ -11,16 +11,20 @@ Unillm é uma interface unificada para trabalhar com Modelos de Linguagem (LLMs)
 ## Provedores e Modelos Suportados
 
 ### OpenAI
-- gpt-4o-mini
+- gpt-4
+- gpt-3.5-turbo
 
 ### Ollama
-- mistral-nemo:latest
+- llama3.1:latest
+- llama3.2:latest
+- llama3.2-vision:latest
+- fluffy/magnum-v4-9b:latest
+- llava:13b
+- dolphin-mixtral:latest
 
 ### Groq
-- llama3-70b-8192
 - mixtral-8x7b-32768
-- gemma-7b-it
-- llama3-8b-8192
+- llama2-70b-4096
 
 ## Tecnologias Utilizadas
 
@@ -65,12 +69,24 @@ Unillm é uma interface unificada para trabalhar com Modelos de Linguagem (LLMs)
 
 ## Configuração
 
+### Configuração Local
 Crie um arquivo `.env` na raiz do projeto e adicione suas chaves de API:
 ```plaintext
 OPENAI_API_KEY=suachave
 OPENAI_BASE_URL=https://api.openai.com/v1/
 OLLAMA_API_KEY=suachave
 OLLAMA_BASE_URL=http://127.0.0.1:11434/api/
+GROQ_API_KEY=suachave
+```
+
+### Configuração com Docker
+Se estiver usando Docker, use esta configuração no `.env`:
+```plaintext
+OPENAI_API_KEY=suachave
+OPENAI_BASE_URL=https://api.openai.com/v1/
+OLLAMA_API_KEY=suachave
+OLLAMA_BASE_URL=http://host.docker.internal:11434/api/
+GROQ_API_KEY=suachave
 ```
 
 ## Execução
@@ -84,13 +100,17 @@ python app.py
 ### Execução com Docker
 Se você estiver usando Docker, o serviço já estará rodando após executar `docker-compose up -d`.
 
-O servidor estará disponível em `http://localhost:3000`.
+O servidor estará disponível em `http://localhost:3007`.
 
 ## Endpoints
 
 ### Gerar Texto
 
 - **POST** `/api/llm/generate-text`
+- **Headers**:
+  ```
+  Content-Type: application/json
+  ```
 - **Corpo da Requisição**:
   ```json
   {
@@ -128,7 +148,8 @@ Exemplos de requisição para cada provider:
   "provider": "ollama",
   "input": "Qual é a capital do Brasil?",
   "options": {
-    "model": "mistral-nemo:latest"
+    "model": "llama3.1:latest",
+    "context": "Você é um professor de geografia"
   }
 }
 ```
@@ -139,7 +160,8 @@ Exemplos de requisição para cada provider:
   "provider": "groq",
   "input": "Qual é a capital do Brasil?",
   "options": {
-    "temperature": 0.7
+    "temperature": 0.7,
+    "model": "mixtral-8x7b-32768"
   }
 }
 ```
