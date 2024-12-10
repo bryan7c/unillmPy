@@ -1,6 +1,8 @@
 import logging
 from groq import Groq
 from config import Config
+import requests
+import os
 
 MODEL_LIST = [
     "llama3-70b-8192",
@@ -15,6 +17,19 @@ class GroqService:
         self.client = Groq(api_key=Config.GROK_API_KEY)
         self.model_index = 0
         self.max_retries = len(MODEL_LIST) * 3  # Máximo de 3 rotações completas pela lista
+
+    def get_models(self):
+        api_key = Config.GROK_API_KEY
+        url = "https://api.groq.com/openai/v1/models"
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+        response = requests.get(url, headers=headers)
+
+        print(response.json())
 
     def generate_text(self, input_text: str, options: dict = None) -> str:
         retries = 0
