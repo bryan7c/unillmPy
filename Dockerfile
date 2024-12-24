@@ -17,6 +17,9 @@ COPY . .
 # Altere para o usuário não root
 USER appuser
 
+# Limpe o terminal
+RUN cls
+
 # Exponha a porta que a aplicação utiliza
 EXPOSE 3001
 
