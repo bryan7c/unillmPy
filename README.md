@@ -7,6 +7,7 @@ Unillm é uma interface unificada para trabalhar com Modelos de Linguagem (LLMs)
 - **Geração de Texto**: Gera texto com base em um prompt fornecido.
 - **Obtenção de Embeddings**: Obtém embeddings para um texto fornecido.
 - **Tradução de Texto**: Realiza a tradução de um texto para um idioma alvo.
+- **Listagem de Modelos**: Retorna a lista de modelos disponíveis para cada provider.
 
 ## Provedores e Modelos Suportados
 
@@ -165,6 +166,17 @@ Exemplos de requisição para cada provider:
   }
 }
 ```
+
+### Listagem de Modelos
+- **GET** `/api/llm/models?provider=string`
+- **Parâmetros de consulta**:
+  - `provider`: Nome do provider (openai, ollama, groq)
+- **Resposta**:
+  ```json
+  {
+    "models": ["modelo1", "modelo2", ...]
+  }
+  ```
 
 ### Status do Servidor
 

@@ -1,7 +1,9 @@
 import requests
 from config import Config
+from services.provider_interface import ProviderInterface
+from typing import List
 
-class OpenAIService:
+class OpenAIService(ProviderInterface):
     def __init__(self):
         self.openai_api_key = Config.OPENAI_API_KEY
         self.openai_base_url = Config.OPENAI_BASE_URL
@@ -21,6 +23,15 @@ class OpenAIService:
                 'content': input_text
             }]
         }
-        response = requests.post(f"{self.openai_base_url}/completions", json=data, headers=headers)
+        response = requests.post(f"{self.openai_base_url}/chat/completions", json=data, headers=headers)
         response.raise_for_status()
         return response.json()['choices'][0]['message']['content']
+
+    def get_available_models(self) -> List[str]:
+        headers = {
+            'Authorization': f'Bearer {self.openai_api_key}'
+        }
+        response = requests.get(f"{self.openai_base_url}/models", headers=headers)
+        response.raise_for_status()
+        models = response.json()['data']
+        return [model['id'] for model in models]

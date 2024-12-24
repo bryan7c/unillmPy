@@ -33,3 +33,25 @@ def generate_text():
     except Exception as e:
         logging.error(f"Unexpected error in generate_text: {str(e)}")
         return jsonify({'error': "Internal server error"}), 500
+
+def list_models():
+    try:
+        provider = request.args.get('provider')
+        if not provider:
+            return jsonify({"error": "Provider is required"}), 400
+
+        try:
+            llm_service = LLMServiceFactory.get_service(provider)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+
+        try:
+            models = llm_service.get_available_models()
+            return jsonify({'models': models})
+        except Exception as error:
+            logging.error(f"Error listing models: {str(error)}")
+            return jsonify({'error': str(error)}), 500
+
+    except Exception as e:
+        logging.error(f"Unexpected error in list_models: {str(e)}")
+        return jsonify({'error': str(e)}), 500

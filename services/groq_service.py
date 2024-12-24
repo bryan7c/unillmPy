@@ -3,6 +3,8 @@ from groq import Groq
 from config import Config
 import requests
 import os
+from services.provider_interface import ProviderInterface
+from typing import List
 
 MODEL_LIST = [
     "llama3-70b-8192",
@@ -11,7 +13,7 @@ MODEL_LIST = [
     "llama3-8b-8192",
 ]
 
-class GroqService:
+class GroqService(ProviderInterface):
     def __init__(self):
         # Inicializa o modelo Groq com as configurações necessárias
         self.client = Groq(api_key=Config.GROK_API_KEY)
@@ -59,3 +61,6 @@ class GroqService:
         raise Exception(
             "Limite atingido: todos os modelos foram tentados e falharam em três rotações completas"
         )
+
+    def get_available_models(self) -> List[str]:
+        return MODEL_LIST.copy()
