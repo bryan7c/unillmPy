@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3007:3001"  # Exponha a porta desejada
+      - "3001:3001"  # Porta padrão da aplicação
     volumes:
       - .:/app       # Monte o diretório atual no container
     env_file:
@@ -15,5 +15,9 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1 
-    command: flask run --host=0.0.0.0 --port=3001  # Comando para rodar a aplicação; ajuste se necessário
+      # Força o uso de host.docker.internal para acessar o Ollama na máquina host
+      - OLLAMA_HOST=host.docker.internal
+    command: python app.py  # Usando o app.py diretamente para usar nossas configurações
     restart: unless-stopped  # Política de reinício
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Necessário para acessar a máquina host em alguns sistemas

@@ -90,6 +90,85 @@ OLLAMA_BASE_URL=http://host.docker.internal:11434/api/
 GROQ_API_KEY=suachave
 ```
 
+## Configuração para Acesso em Rede
+
+Para tornar a aplicação acessível de outras máquinas na rede:
+
+1. Copie o arquivo `.env.example` para `.env`:
+   ```bash
+   copy .env.example .env
+   ```
+
+2. Configure o arquivo `.env`:
+   - `FLASK_HOST`: Mantenha como `0.0.0.0` para permitir acesso externo
+   - `FLASK_PORT`: Porta em que o servidor irá rodar (padrão: 3001)
+   - `OLLAMA_HOST`: IP da máquina onde o Ollama está rodando
+     - Se o Ollama estiver na mesma máquina, use `localhost`
+     - Se estiver em outra máquina, use o IP dela (exemplo: `192.168.1.100`)
+
+3. Inicie o servidor:
+   ```bash
+   python app.py
+   ```
+
+4. Acesse a aplicação de outras máquinas usando:
+   ```
+   http://<IP-DA-MAQUINA>:3001
+   ```
+   Substitua `<IP-DA-MAQUINA>` pelo IP da máquina onde o servidor está rodando.
+
+**Nota**: Certifique-se de que:
+- A porta 3001 está liberada no firewall do Windows
+- O Ollama está acessível na rede se estiver em outra máquina
+
+## Configuração para Docker
+
+Se você estiver usando Docker, a aplicação detectará automaticamente e usará `host.docker.internal` para se comunicar com o Ollama na máquina host. Para executar:
+
+1. Construa a imagem Docker:
+   ```bash
+   docker build -t unillm .
+   ```
+
+2. Execute o container:
+   ```bash
+   docker run -p 3001:3001 --env-file .env unillm
+   ```
+
+3. Acesse a aplicação:
+   - De dentro da máquina host: `http://localhost:3001`
+   - De outras máquinas na rede: `http://<IP-DA-MAQUINA-HOST>:3001`
+
+**Nota**: Se você estiver usando Docker no Windows:
+- O Ollama deve estar rodando na máquina host
+- O Docker Desktop precisa estar configurado para usar o WSL 2
+- Certifique-se de que a porta 3001 está liberada no firewall do Windows
+
+## Configuração para Docker Compose
+
+Para executar a aplicação usando Docker Compose:
+
+1. Certifique-se de que o Ollama está rodando na máquina host
+
+2. Execute:
+   ```bash
+   docker-compose up --build
+   ```
+
+3. Acesse a aplicação:
+   - De dentro da máquina host: `http://localhost:3001`
+   - De outras máquinas na rede: `http://<IP-DA-MAQUINA-HOST>:3001`
+
+**Nota**: Se você estiver usando Docker no Windows:
+- O Docker Desktop precisa estar configurado para usar o WSL 2
+- Certifique-se de que a porta 3001 está liberada no firewall do Windows
+- O Ollama deve estar rodando na máquina host antes de iniciar o container
+
+Para parar a aplicação:
+```bash
+docker-compose down
+```
+
 ## Execução
 
 ### Execução Local

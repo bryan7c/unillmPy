@@ -1,6 +1,7 @@
 from flask import Blueprint
 from controllers.llm_controller import generate_text, list_models
 from middlewares.api_middleware import api_middleware
+import socket
 
 llm_routes = Blueprint('llm_routes', __name__)
 
@@ -19,4 +20,5 @@ def list_models_route():
 # Rota para verificar o status do servidor
 @llm_routes.route("/status", methods=["GET"])
 def status():
-    return {"status": "Servidor está funcionando"}
+    ip_address = socket.gethostbyname(socket.gethostname())  # Obtém o IP da máquina
+    return {"status": "Servidor está funcionando", "ip": ip_address}
