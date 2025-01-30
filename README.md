@@ -8,6 +8,7 @@ Unillm é uma interface unificada para trabalhar com Modelos de Linguagem (LLMs)
 - **Obtenção de Embeddings**: Obtém embeddings para um texto fornecido.
 - **Tradução de Texto**: Realiza a tradução de um texto para um idioma alvo.
 - **Listagem de Modelos**: Retorna a lista de modelos disponíveis para cada provider.
+- **Processamento de Respostas**: Remove automaticamente o conteúdo entre tags <think></think> nas respostas do modelo deepseek-r1.
 
 ## Provedores e Modelos Suportados
 
@@ -22,6 +23,7 @@ Unillm é uma interface unificada para trabalhar com Modelos de Linguagem (LLMs)
 - fluffy/magnum-v4-9b:latest
 - llava:13b
 - dolphin-mixtral:latest
+- deepseek-r1:latest
 
 ### Groq
 - mixtral-8x7b-32768

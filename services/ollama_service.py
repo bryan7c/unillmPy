@@ -5,6 +5,7 @@ import time
 from config import Config
 from services.provider_interface import ProviderInterface
 from typing import List, Dict, Union
+from utils.response_processor import process_ollama_response
 
 class OllamaService(ProviderInterface):
     def __init__(self):
@@ -71,7 +72,14 @@ class OllamaService(ProviderInterface):
         
         # Parse the response
         result = response.json()
-        return result.get('response', '')
+        response_text = result.get('response', '')
+        
+        # Processa a resposta se o modelo for deepseek-r1:latest
+        model = options.get('model', self.model) if options else self.model
+        if model == 'deepseek-r1:latest':
+            response_text = process_ollama_response(response_text)
+        
+        return response_text
 
     def get_available_models(self) -> List[str]:
         try:
