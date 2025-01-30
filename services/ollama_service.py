@@ -6,6 +6,8 @@ from config import Config
 from services.provider_interface import ProviderInterface
 from typing import List, Dict, Union
 from utils.response_processor import process_ollama_response
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 class OllamaService(ProviderInterface):
     def __init__(self):
@@ -15,6 +17,20 @@ class OllamaService(ProviderInterface):
             self.base_url = 'http://host.docker.internal:11434/api'
         else:
             self.base_url = Config.OLLAMA_BASE_URL.rstrip('/')
+        
+        # Configurar retry strategy
+        retry_strategy = Retry(
+            total=3,  # número total de tentativas
+            backoff_factor=1,  # tempo entre tentativas: {backoff_factor} * (2 ** ({número da tentativa} - 1))
+            status_forcelist=[500, 502, 503, 504]  # status HTTP para retry
+        )
+        
+        # Criar sessão com retry
+        self.session = requests.Session()
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+        
         logging.info(f"Initializing OllamaService with base_url: {self.base_url}")
 
     def generate_text(self, input_text: str, options: Dict[str, Union[str, List[str]]] = None) -> Union[str, List[Dict[str, str]]]:
@@ -61,30 +77,37 @@ class OllamaService(ProviderInterface):
         
         logging.info(f"Sending request to Ollama: URL={url}, payload={payload}")
         
-        # Make the request with a longer timeout
-        response = requests.post(url, json=payload, timeout=60)
-        
-        # Log the response for debugging
-        logging.info(f"Ollama response status: {response.status_code}")
-        if response.status_code != 200:
-            logging.error(f"Ollama error response: {response.text}")
-            raise RuntimeError(f"Ollama retornou erro {response.status_code}: {response.text}")
-        
-        # Parse the response
-        result = response.json()
-        response_text = result.get('response', '')
-        
-        # Processa a resposta se o modelo for deepseek-r1:latest
-        model = options.get('model', self.model) if options else self.model
-        if model == 'deepseek-r1:latest':
-            response_text = process_ollama_response(response_text)
-        
-        return response_text
+        # Aumentar o timeout para 180 segundos (3 minutos)
+        try:
+            response = self.session.post(url, json=payload, timeout=180)
+            logging.info(f"Ollama response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                logging.error(f"Ollama error response: {response.text}")
+                raise RuntimeError(f"Ollama retornou erro {response.status_code}: {response.text}")
+            
+            # Parse the response
+            result = response.json()
+            response_text = result.get('response', '')
+            
+            # Processa a resposta se o modelo for deepseek-r1:latest
+            model = options.get('model', self.model) if options else self.model
+            if model == 'deepseek-r1:latest':
+                response_text = process_ollama_response(response_text)
+            
+            return response_text
+            
+        except requests.Timeout:
+            logging.error("Timeout ao aguardar resposta do Ollama (180s)")
+            raise RuntimeError("O modelo está demorando muito para responder. Por favor, tente novamente ou use um modelo mais leve.")
+        except requests.RequestException as e:
+            logging.error(f"Erro na requisição ao Ollama: {str(e)}")
+            raise RuntimeError(f"Erro ao comunicar com o Ollama: {str(e)}")
 
     def get_available_models(self) -> List[str]:
         try:
             url = f"{self.base_url}/tags"
-            response = requests.get(url)
+            response = self.session.get(url)
             response.raise_for_status()
             models = response.json()['models']
             return [model['name'] for model in models]
