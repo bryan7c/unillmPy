@@ -1,7 +1,8 @@
 import requests
+import time
 from config import Config
 from services.provider_interface import ProviderInterface
-from typing import List
+from typing import List, Dict, Union
 
 class OpenAIService(ProviderInterface):
     def __init__(self):
@@ -18,15 +19,28 @@ class OpenAIService(ProviderInterface):
                     # Cria uma cópia das options para cada modelo
                     model_options = options.copy()
                     model_options['model'] = model
+                    
+                    start_time = time.time()
                     response = self._generate_single_text(input_text, model_options)
+                    execution_time = time.time() - start_time
+                    
                     responses.append({
                         'model': model,
-                        'response': response
+                        'response': response,
+                        'execution_time_seconds': round(execution_time, 2)
                     })
                 return responses
             else:
                 # Comportamento padrão para um único modelo
-                return self._generate_single_text(input_text, options)
+                start_time = time.time()
+                response = self._generate_single_text(input_text, options)
+                execution_time = time.time() - start_time
+                
+                return [{
+                    'model': options.get('model', self.model) if options else self.model,
+                    'response': response,
+                    'execution_time_seconds': round(execution_time, 2)
+                }]
         except Exception as e:
             raise RuntimeError(f"Erro ao gerar texto: {str(e)}")
 
