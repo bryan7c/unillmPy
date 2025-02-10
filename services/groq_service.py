@@ -5,6 +5,7 @@ from config import Config
 import requests
 import os
 from services.provider_interface import ProviderInterface
+from services.cache_manager import CacheManager
 from typing import List, Dict, Union
 
 MODEL_LIST = [
@@ -21,6 +22,7 @@ class GroqService(ProviderInterface):
         self.model_index = 0
         self.max_retries = len(MODEL_LIST) * 3  # Máximo de 3 rotações completas pela lista
         self.model = MODEL_LIST[self.model_index]  # Modelo padrão
+        self.cache = CacheManager()  # Cache com expiração de 5 minutos
 
     def get_models(self):
         api_key = Config.GROK_API_KEY
@@ -71,9 +73,26 @@ class GroqService(ProviderInterface):
 
     def _generate_single_text(self, input_text: str, options: dict = None) -> str:
         retries = 0
-        context = options.get('context', '')
+        context = options.get('context', '') if options else ''
         model = options.get('model', self.model) if options else self.model
+        no_cache = options.get('no_cache', False) if options else False
 
+        # Se no_cache for True, não verifica o cache
+        if not no_cache:
+            # Gera uma chave única para o cache baseada no input, contexto e modelo
+            cache_key = f"{input_text}:{context}:{model}"
+            logging.info(f"[Cache] Verificando cache com a chave: {cache_key}")
+            
+            # Verifica se existe resposta em cache
+            cached_response = self.cache.get(cache_key)
+            if cached_response:
+                logging.info(f"[Cache Hit] Resposta encontrada no cache para o modelo {model}")
+                return cached_response
+            
+            logging.info(f"[Cache Miss] Cache não encontrado para o modelo {model}")
+        else:
+            logging.info(f"[Cache] Cache desabilitado para esta requisição")
+        
         while retries < self.max_retries:
             try:
                 response = self.client.chat.completions.create(
@@ -87,7 +106,12 @@ class GroqService(ProviderInterface):
                     temperature=0.7,
                     model=model,
                 )
-                return response.choices[0].message.content
+                response_text = response.choices[0].message.content
+                # Armazena a resposta no cache
+                if not no_cache:
+                    self.cache.set(cache_key, response_text)
+                    logging.info(f"[Cache Store] Nova resposta armazenada no cache para o modelo {model}")
+                return response_text
             except Exception as e:
                 retries += 1
                 self.model_index = (self.model_index + 1) % len(MODEL_LIST)

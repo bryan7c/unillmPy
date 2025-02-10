@@ -199,16 +199,19 @@ O servidor estará disponível em `http://localhost:3007`.
     "provider": "openai",
     "input": "Seu texto aqui",
     "options": {
-      "temperature": 0.7,
-      "maxTokens": 100
+      "model": "gpt-3.5-turbo",
+      "context": "Contexto opcional para o modelo",
+      "no_cache": false
     }
   }
   ```
-
-O campo `provider` aceita os seguintes valores:
-- `"openai"` - Serviço da OpenAI
-- `"ollama"` - Serviço do Ollama
-- `"groq"` - Serviço do Groq
+- **Parâmetros**:
+  - `provider` (obrigatório): O provedor LLM a ser usado ("openai", "ollama" ou "groq")
+  - `input` (obrigatório): O texto de entrada para o modelo
+  - `options` (opcional): Configurações adicionais
+    - `model`: O modelo específico a ser usado
+    - `context`: Contexto adicional para o modelo (system prompt)
+    - `no_cache`: Se true, ignora o cache e sempre faz uma nova requisição ao modelo (padrão: false)
 
 Exemplos de requisição para cada provider:
 

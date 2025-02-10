@@ -8,6 +8,7 @@ from typing import List, Dict, Union
 from utils.response_processor import process_ollama_response
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from services.cache_manager import CacheManager
 
 class OllamaService(ProviderInterface):
     def __init__(self):
@@ -30,6 +31,9 @@ class OllamaService(ProviderInterface):
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
+        
+        # Inicializar o cache
+        self.cache = CacheManager()
         
         logging.info(f"Initializing OllamaService with base_url: {self.base_url}")
 
@@ -65,15 +69,35 @@ class OllamaService(ProviderInterface):
     def _generate_single_text(self, input_text: str, options: Dict[str, str] = None) -> str:
         # Prepare the request
         url = f"{self.base_url}/generate"
+        model = options.get('model', self.model) if options else self.model
+        context = options.get('context', '') if options else ''
+        no_cache = options.get('no_cache', False) if options else False
+        
+        # Se no_cache for True, não verifica o cache
+        if not no_cache:
+            # Gera uma chave única para o cache baseada no input, contexto e modelo
+            cache_key = f"{input_text}:{context}:{model}"
+            logging.info(f"[Cache] Verificando cache com a chave: {cache_key}")
+            
+            # Verifica se existe resposta em cache
+            cached_response = self.cache.get(cache_key)
+            if cached_response:
+                logging.info(f"[Cache Hit] Resposta encontrada no cache para o modelo {model}")
+                return cached_response
+            
+            logging.info(f"[Cache Miss] Cache não encontrado para o modelo {model}")
+        else:
+            logging.info(f"[Cache] Cache desabilitado para esta requisição")
+        
         payload = {
-            "model": options.get('model', self.model) if options else self.model,
+            "model": model,
             "prompt": input_text,
             "stream": False
         }
         
         # Adicionar system prompt apenas se estiver presente nas options
-        if options and options.get('context'):
-            payload["system"] = options['context']
+        if context:
+            payload["system"] = context
         
         logging.info(f"Sending request to Ollama: URL={url}, payload={payload}")
         
@@ -91,9 +115,13 @@ class OllamaService(ProviderInterface):
             response_text = result.get('response', '')
             
             # Processa a resposta se o modelo for deepseek-r1:latest
-            model = options.get('model', self.model) if options else self.model
             if model == 'deepseek-r1:latest':
                 response_text = process_ollama_response(response_text)
+            
+            # Armazena a resposta no cache
+            if not no_cache:
+                self.cache.set(cache_key, response_text)
+                logging.info(f"[Cache Store] Nova resposta armazenada no cache para o modelo {model}")
             
             return response_text
             
