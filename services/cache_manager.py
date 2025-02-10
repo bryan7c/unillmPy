@@ -9,7 +9,7 @@ class CacheManager:
         if not cls._instance:
             cls._instance = super(CacheManager, cls).__new__(cls)
             cls._instance._cache = {}
-            cls._instance.expiration_time = 300  # 300 segundos = 5 minutos
+            cls._instance.expiration_time = 3000  # 3000 segundos = 50 minutos
             logging.info(f"[Cache] Inicializado com tempo de expiração de {cls._instance.expiration_time} segundos")
         return cls._instance
 

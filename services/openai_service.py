@@ -1,17 +1,16 @@
 import requests
 import time
 from config import Config
-from services.provider_interface import ProviderInterface
+from services.base_llm_service import BaseLLMService
 from typing import List, Dict, Union
-from services.cache_manager import CacheManager
 import logging
 
-class OpenAIService(ProviderInterface):
+class OpenAIService(BaseLLMService):
     def __init__(self):
+        super().__init__()
         self.openai_api_key = Config.OPENAI_API_KEY
         self.openai_base_url = Config.OPENAI_BASE_URL
         self.model = "gpt-4o-mini"  # Modelo padrão
-        self.cache = CacheManager()  # Inicializar o cache
 
     def generate_text(self, input_text: str, options: dict = None) -> str:
         try:
@@ -48,25 +47,12 @@ class OpenAIService(ProviderInterface):
             raise RuntimeError(f"Erro ao gerar texto: {str(e)}")
 
     def _generate_single_text(self, input_text: str, options: dict = None) -> str:
-        model = options.get('model', self.model) if options else self.model
-        context = options.get('context', '') if options else ''
-        no_cache = options.get('no_cache', False) if options else False
-        
-        # Se no_cache for True, não verifica o cache
-        if not no_cache:
-            # Gera uma chave única para o cache baseada no input, contexto e modelo
-            cache_key = f"{input_text}:{context}:{model}"
-            logging.info(f"[Cache] Verificando cache com a chave: {cache_key}")
-            
-            # Verifica se existe resposta em cache
-            cached_response = self.cache.get(cache_key)
-            if cached_response:
-                logging.info(f"[Cache Hit] Resposta encontrada no cache para o modelo {model}")
-                return cached_response
-            
-            logging.info(f"[Cache Miss] Cache não encontrado para o modelo {model}")
-        else:
-            logging.info(f"[Cache] Cache desabilitado para esta requisição")
+        model, context, no_cache = self._get_options_values(options, self.model)
+
+        # Verifica o cache
+        cached_response = self._check_cache(input_text, context, model, no_cache)
+        if cached_response:
+            return cached_response
         
         headers = {
             'Content-Type': 'application/json',
@@ -87,9 +73,7 @@ class OpenAIService(ProviderInterface):
         response_text = response.json()['choices'][0]['message']['content']
         
         # Armazena a resposta no cache
-        if not no_cache:
-            self.cache.set(cache_key, response_text)
-            logging.info(f"[Cache Store] Nova resposta armazenada no cache para o modelo {model}")
+        self._store_in_cache(input_text, context, model, response_text, no_cache)
         
         return response_text
 

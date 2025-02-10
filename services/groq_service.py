@@ -1,11 +1,8 @@
-import logging
-import time
 from groq import Groq
 from config import Config
-import requests
-import os
-from services.provider_interface import ProviderInterface
-from services.cache_manager import CacheManager
+import logging
+import time
+from services.base_llm_service import BaseLLMService
 from typing import List, Dict, Union
 
 MODEL_LIST = [
@@ -15,27 +12,14 @@ MODEL_LIST = [
     "llama3-8b-8192",
 ]
 
-class GroqService(ProviderInterface):
+class GroqService(BaseLLMService):
     def __init__(self):
+        super().__init__()
         # Inicializa o modelo Groq com as configurações necessárias
         self.client = Groq(api_key=Config.GROK_API_KEY)
         self.model_index = 0
         self.max_retries = len(MODEL_LIST) * 3  # Máximo de 3 rotações completas pela lista
         self.model = MODEL_LIST[self.model_index]  # Modelo padrão
-        self.cache = CacheManager()  # Cache com expiração de 5 minutos
-
-    def get_models(self):
-        api_key = Config.GROK_API_KEY
-        url = "https://api.groq.com/openai/v1/models"
-
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-
-        response = requests.get(url, headers=headers)
-
-        print(response.json())
 
     def generate_text(self, input_text: str, options: dict = None) -> Union[List[Dict[str, Union[str, float]]], str]:
         try:
@@ -73,26 +57,13 @@ class GroqService(ProviderInterface):
 
     def _generate_single_text(self, input_text: str, options: dict = None) -> str:
         retries = 0
-        context = options.get('context', '') if options else ''
-        model = options.get('model', self.model) if options else self.model
-        no_cache = options.get('no_cache', False) if options else False
+        model, context, no_cache = self._get_options_values(options, self.model)
 
-        # Se no_cache for True, não verifica o cache
-        if not no_cache:
-            # Gera uma chave única para o cache baseada no input, contexto e modelo
-            cache_key = f"{input_text}:{context}:{model}"
-            logging.info(f"[Cache] Verificando cache com a chave: {cache_key}")
-            
-            # Verifica se existe resposta em cache
-            cached_response = self.cache.get(cache_key)
-            if cached_response:
-                logging.info(f"[Cache Hit] Resposta encontrada no cache para o modelo {model}")
-                return cached_response
-            
-            logging.info(f"[Cache Miss] Cache não encontrado para o modelo {model}")
-        else:
-            logging.info(f"[Cache] Cache desabilitado para esta requisição")
-        
+        # Verifica o cache
+        cached_response = self._check_cache(input_text, context, model, no_cache)
+        if cached_response:
+            return cached_response
+
         while retries < self.max_retries:
             try:
                 response = self.client.chat.completions.create(
@@ -107,10 +78,9 @@ class GroqService(ProviderInterface):
                     model=model,
                 )
                 response_text = response.choices[0].message.content
+                
                 # Armazena a resposta no cache
-                if not no_cache:
-                    self.cache.set(cache_key, response_text)
-                    logging.info(f"[Cache Store] Nova resposta armazenada no cache para o modelo {model}")
+                self._store_in_cache(input_text, context, model, response_text, no_cache)
                 return response_text
             except Exception as e:
                 retries += 1
