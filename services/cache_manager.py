@@ -9,7 +9,7 @@ class CacheManager:
         if not cls._instance:
             cls._instance = super(CacheManager, cls).__new__(cls)
             cls._instance._cache = {}
-            cls._instance.expiration_time = 3000  # 3000 segundos = 50 minutos
+            cls._instance.expiration_time = None  # Sem tempo de expiração
             logging.info(f"[Cache] Inicializado com tempo de expiração de {cls._instance.expiration_time} segundos")
         return cls._instance
 
@@ -19,7 +19,7 @@ class CacheManager:
             current_time = time.time()
             age = current_time - cache_data['timestamp']
             
-            if age < self.expiration_time:
+            if self.expiration_time is None or age < self.expiration_time:
                 logging.info(f"[Cache] Item encontrado, idade: {age:.2f} segundos")
                 return cache_data['value']
             else:
@@ -39,12 +39,13 @@ class CacheManager:
         logging.info("[Cache] Cache limpo")
 
     def remove_expired(self):
-        current_time = time.time()
-        expired_keys = [
-            key for key, data in self._cache.items()
-            if current_time - data['timestamp'] >= self.expiration_time
-        ]
-        for key in expired_keys:
-            del self._cache[key]
-        if expired_keys:
-            logging.info(f"[Cache] {len(expired_keys)} itens expirados removidos")
+        if self.expiration_time is not None:
+            current_time = time.time()
+            expired_keys = [
+                key for key, data in self._cache.items()
+                if current_time - data['timestamp'] >= self.expiration_time
+            ]
+            for key in expired_keys:
+                del self._cache[key]
+            if expired_keys:
+                logging.info(f"[Cache] {len(expired_keys)} itens expirados removidos")

@@ -1,10 +1,9 @@
 import requests
 import logging
 import os
-import time
 from config import Config
 from services.base_llm_service import BaseLLMService
-from typing import List, Dict, Union
+from typing import List, Dict
 from utils.response_processor import process_ollama_response
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -33,42 +32,6 @@ class OllamaService(BaseLLMService):
         self.session.mount("https://", adapter)
         
         logging.info(f"Initializing OllamaService with base_url: {self.base_url}")
-
-    def generate_text(self, input_text: str, options: Dict[str, Union[str, List[str]]] = None) -> Union[str, List[Dict[str, str]]]:
-        try:
-            # Verifica se options['model'] é uma lista
-            if options and isinstance(options.get('model'), list):
-                responses = []
-                for model in options['model']:
-                    # Cria uma cópia das options para cada modelo
-                    model_options = options.copy()
-                    model_options['model'] = model
-                    
-                    start_time = time.time()
-                    response = self._generate_single_text(input_text, model_options)
-                    execution_time = time.time() - start_time
-                    
-                    responses.append({
-                        'model': model,
-                        'response': response,
-                        'execution_time_seconds': round(execution_time, 2)
-                    })
-                return responses
-            else:
-                # Comportamento padrão para um único modelo
-                start_time = time.time()
-                response = self._generate_single_text(input_text, options)
-                execution_time = time.time() - start_time
-                
-                return [{
-                    'model': options.get('model', self.model) if options else self.model,
-                    'response': response,
-                    'execution_time_seconds': round(execution_time, 2)
-                }]
-                
-        except Exception as e:
-            logging.error(f"Error generating text: {str(e)}")
-            raise
 
     def _generate_single_text(self, input_text: str, options: Dict[str, str] = None) -> str:
         # Prepare the request

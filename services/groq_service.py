@@ -1,9 +1,8 @@
 from groq import Groq
 from config import Config
 import logging
-import time
 from services.base_llm_service import BaseLLMService
-from typing import List, Dict, Union
+from typing import List
 
 MODEL_LIST = [
     "llama3-70b-8192",
@@ -20,40 +19,6 @@ class GroqService(BaseLLMService):
         self.model_index = 0
         self.max_retries = len(MODEL_LIST) * 3  # Máximo de 3 rotações completas pela lista
         self.model = MODEL_LIST[self.model_index]  # Modelo padrão
-
-    def generate_text(self, input_text: str, options: dict = None) -> Union[List[Dict[str, Union[str, float]]], str]:
-        try:
-            # Verifica se options['model'] é uma lista
-            if options and isinstance(options.get('model'), list):
-                responses = []
-                for model in options['model']:
-                    # Cria uma cópia das options para cada modelo
-                    model_options = options.copy()
-                    model_options['model'] = model
-                    
-                    start_time = time.time()
-                    response = self._generate_single_text(input_text, model_options)
-                    execution_time = time.time() - start_time
-                    
-                    responses.append({
-                        'model': model,
-                        'response': response,
-                        'execution_time_seconds': round(execution_time, 2)
-                    })
-                return responses
-            else:
-                # Comportamento padrão para um único modelo
-                start_time = time.time()
-                response = self._generate_single_text(input_text, options)
-                execution_time = time.time() - start_time
-                
-                return [{
-                    'model': options.get('model', self.model) if options else self.model,
-                    'response': response,
-                    'execution_time_seconds': round(execution_time, 2)
-                }]
-        except Exception as e:
-            raise RuntimeError(f"Erro ao gerar texto: {str(e)}")
 
     def _generate_single_text(self, input_text: str, options: dict = None) -> str:
         retries = 0
