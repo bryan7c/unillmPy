@@ -90,7 +90,7 @@ class BaseLLMService(ProviderInterface):
         """
         model = options.get('model', default_model) if options else default_model
         context = options.get('context', '') if options else ''
-        no_cache = options.get('no_cache', True) if options else True
+        no_cache = options.get('no_cache', False) if options else False
         return model, context, no_cache
 
     def _generate_single_text(self, input_text: str, options: Dict[str, Any] = None) -> str:
