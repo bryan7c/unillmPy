@@ -9,7 +9,15 @@ MODEL_LIST = [
     "mixtral-8x7b-32768",
     "gemma-7b-it",
     "llama3-8b-8192",
+    "distil-whisper-large-v3-en",
+    "gemma2-9b-it",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "llama-guard-3-8b",
+    "whisper-large-v3",
+    "whisper-large-v3-turbo"
 ]
+
 
 class GroqService(BaseLLMService):
     def __init__(self):

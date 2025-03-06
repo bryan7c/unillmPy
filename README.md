@@ -182,7 +182,7 @@ python app.py
 ### Execução com Docker
 Se você estiver usando Docker, o serviço já estará rodando após executar `docker-compose up -d`.
 
-O servidor estará disponível em `http://localhost:3007`.
+O servidor estará disponível em `http://localhost:3001`.
 
 ## Endpoints
 
@@ -212,6 +212,15 @@ O servidor estará disponível em `http://localhost:3007`.
     - `model`: O modelo específico a ser usado
     - `context`: Contexto adicional para o modelo (system prompt)
     - `no_cache`: Se true, ignora o cache e sempre faz uma nova requisição ao modelo (padrão: false)
+- **Resposta**:
+  ```json
+  {
+    "response": "Texto gerado pelo modelo",
+    "model": "nome-do-modelo-usado",
+    "provider": "nome-do-provider",
+    "processing_time": "tempo-de-processamento-em-segundos"
+  }
+  ```
 
 Exemplos de requisição para cada provider:
 
@@ -250,6 +259,74 @@ Exemplos de requisição para cada provider:
   }
 }
 ```
+
+### Obter Embeddings
+
+- **POST** `/api/llm/embeddings`
+- **Headers**:
+  ```
+  Content-Type: application/json
+  ```
+- **Corpo da Requisição**:
+  ```json
+  {
+    "provider": "openai",
+    "input": "Seu texto aqui",
+    "options": {
+      "model": "text-embedding-ada-002"
+    }
+  }
+  ```
+- **Parâmetros**:
+  - `provider` (obrigatório): O provedor a ser usado ("openai")
+  - `input` (obrigatório): O texto para o qual obter embeddings
+  - `options` (opcional): Configurações adicionais
+    - `model`: O modelo específico para embeddings a ser usado
+- **Resposta**:
+  ```json
+  {
+    "embedding": [0.123, 0.456, ...],
+    "model": "nome-do-modelo-usado",
+    "provider": "nome-do-provider",
+    "processing_time": "tempo-de-processamento-em-segundos"
+  }
+  ```
+
+### Traduzir Texto
+
+- **POST** `/api/llm/translate`
+- **Headers**:
+  ```
+  Content-Type: application/json
+  ```
+- **Corpo da Requisição**:
+  ```json
+  {
+    "provider": "openai",
+    "input": "Seu texto a ser traduzido aqui",
+    "target_language": "en",
+    "options": {
+      "model": "gpt-3.5-turbo"
+    }
+  }
+  ```
+- **Parâmetros**:
+  - `provider` (obrigatório): O provedor LLM a ser usado ("openai", "ollama" ou "groq")
+  - `input` (obrigatório): O texto a ser traduzido
+  - `target_language` (obrigatório): O código do idioma alvo (ex: "en", "es", "fr")
+  - `options` (opcional): Configurações adicionais
+    - `model`: O modelo específico a ser usado
+- **Resposta**:
+  ```json
+  {
+    "translation": "Texto traduzido",
+    "source_language": "Idioma de origem detectado ou especificado",
+    "target_language": "Idioma alvo",
+    "model": "nome-do-modelo-usado",
+    "provider": "nome-do-provider",
+    "processing_time": "tempo-de-processamento-em-segundos"
+  }
+  ```
 
 ### Listagem de Modelos
 - **GET** `/api/llm/models?provider=string`
