@@ -11,7 +11,7 @@ from urllib3.util.retry import Retry
 class OllamaService(BaseLLMService):
     def __init__(self):
         super().__init__()
-        self.model = "llama3.1:latest"  # This matches exactly with what's available in Ollama
+        self.model = "llama3.2:latest"  # This matches exactly with what's available in Ollama
         # Force the use of host.docker.internal in Docker environment
         if os.path.exists('/.dockerenv'):
             self.base_url = 'http://host.docker.internal:11434/api'
