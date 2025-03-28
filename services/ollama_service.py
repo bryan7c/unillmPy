@@ -68,9 +68,7 @@ class OllamaService(BaseLLMService):
             result = response.json()
             response_text = result.get('response', '')
             
-            # Processa a resposta se o modelo for deepseek-r1:latest
-            if model == 'deepseek-r1:latest':
-                response_text = process_ollama_response(response_text)
+            response_text = process_ollama_response(response_text)
             
             # Armazena a resposta no cache
             self._store_in_cache(input_text, context, model, response_text, no_cache)
