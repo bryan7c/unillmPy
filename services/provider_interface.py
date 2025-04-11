@@ -13,3 +13,15 @@ class ProviderInterface(ABC):
     def get_available_models(self) -> List[str]:
         """Retorna a lista de modelos disponíveis do provider"""
         pass
+
+    @abstractmethod
+    def cancel_requests(self, origin: str = None) -> bool:
+        """Cancela todas as requisições em execução para um determinado origin ou todas se origin não for especificado
+        
+        Args:
+            origin: Identificador da origem das requisições a serem canceladas. Se None, cancela todas as requisições.
+            
+        Returns:
+            bool: True se alguma requisição foi cancelada, False caso contrário
+        """
+        pass

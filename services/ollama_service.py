@@ -127,3 +127,33 @@ class OllamaService(BaseLLMService):
         except Exception as e:
             logging.error(f"Error getting available models: {str(e)}")
             return []
+            
+    def cancel_requests(self, origin: str = None) -> bool:
+        """Cancela todas as requisições em execução para um determinado origin ou todas se origin não for especificado"""
+        cancelled = False
+        
+        with self._sessions_lock:
+            if origin:
+                # Cancela apenas a sessão da origem especificada
+                current_session = self._origin_sessions.get(origin)
+                if current_session:
+                    try:
+                        current_session.close()
+                        self._origin_sessions[origin] = None
+                        cancelled = True
+                        logging.info(f"Requisição cancelada para origem: {origin}")
+                    except Exception as e:
+                        logging.error(f"Erro ao cancelar requisição para origem {origin}: {str(e)}")
+            else:
+                # Cancela todas as sessões ativas
+                for org, session in self._origin_sessions.items():
+                    if session:
+                        try:
+                            session.close()
+                            self._origin_sessions[org] = None
+                            cancelled = True
+                            logging.info(f"Requisição cancelada para origem: {org}")
+                        except Exception as e:
+                            logging.error(f"Erro ao cancelar requisição para origem {org}: {str(e)}")
+        
+        return cancelled
