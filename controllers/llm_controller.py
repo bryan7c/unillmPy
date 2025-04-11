@@ -17,6 +17,11 @@ def generate_text():
             return jsonify({"error": "Input text is required"}), 400
 
         options = data.get('options', {})
+        
+        # Extrair origem do header ou usar default
+        origin = request.headers.get('X-Origin', 'default')
+        if 'origin' not in options:  # Não sobrescrever se já existir nas options
+            options['origin'] = origin
 
         try:
             llm_service = LLMServiceFactory.get_service(provider)

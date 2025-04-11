@@ -7,6 +7,8 @@ from typing import List, Dict
 from utils.response_processor import process_ollama_response
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from threading import Lock
+from collections import defaultdict
 
 class OllamaService(BaseLLMService):
     def __init__(self):
@@ -17,6 +19,13 @@ class OllamaService(BaseLLMService):
             self.base_url = 'http://host.docker.internal:11434/api'
         else:
             self.base_url = Config.OLLAMA_BASE_URL.rstrip('/')
+        
+        # Timeout fixo de 10 minutos
+        self.request_timeout = 600
+        
+        # Controle de sessões por origem
+        self._sessions_lock = Lock()
+        self._origin_sessions = defaultdict(lambda: None)
         
         # Configurar retry strategy
         retry_strategy = Retry(
@@ -37,6 +46,9 @@ class OllamaService(BaseLLMService):
         # Prepare the request
         url = f"{self.base_url}/generate"
         model, context, no_cache = self._get_options_values(options, self.model)
+        
+        # Obter a origem da requisição
+        origin = options.get('origin', 'default') if options else 'default'
 
         # Verifica o cache
         cached_response = self._check_cache(input_text, context, model, no_cache)
@@ -55,9 +67,30 @@ class OllamaService(BaseLLMService):
         
         logging.info(f"Sending request to Ollama: URL={url}, payload={payload}")
         
-        # Aumentar o timeout para 180 segundos (3 minutos)
+        # Criar nova sessão para esta requisição
+        new_session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 503, 504]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        new_session.mount("http://", adapter)
+        new_session.mount("https://", adapter)
+        
+        # Cancelar sessão anterior da mesma origem se existir
+        with self._sessions_lock:
+            current_session = self._origin_sessions[origin]
+            if current_session:
+                try:
+                    current_session.close()
+                    logging.info(f"Cancelando requisição anterior da origem: {origin}")
+                except:
+                    pass
+            self._origin_sessions[origin] = new_session
+        
         try:
-            response = self.session.post(url, json=payload, timeout=180)
+            response = new_session.post(url, json=payload, timeout=self.request_timeout)
             logging.info(f"Ollama response status: {response.status_code}")
             
             if response.status_code != 200:
@@ -76,8 +109,13 @@ class OllamaService(BaseLLMService):
             return response_text
             
         except requests.Timeout:
-            logging.error("Timeout ao aguardar resposta do Ollama (180s)")
-            raise RuntimeError("Timeout ao aguardar resposta do Ollama (180s)")
+            logging.error(f"Timeout ao aguardar resposta do Ollama ({self.request_timeout}s)")
+            raise RuntimeError(f"Timeout ao aguardar resposta do Ollama ({self.request_timeout}s)")
+        except requests.RequestException as e:
+            if "Connection aborted" in str(e):
+                logging.info(f"Requisição anterior da origem {origin} cancelada por nova requisição")
+                raise RuntimeError(f"Requisição da origem {origin} cancelada por nova solicitação")
+            raise e
 
     def get_available_models(self) -> List[str]:
         try:

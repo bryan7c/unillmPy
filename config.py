@@ -12,6 +12,9 @@ class Config:
     OLLAMA_HOST = 'host.docker.internal' if IN_DOCKER else os.getenv('OLLAMA_HOST', 'localhost')
     OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL', f'http://{OLLAMA_HOST}:11434/api/')
     
+    # Configuração de timeout para o Ollama (em segundos)
+    OLLAMA_TIMEOUT = int(os.getenv('OLLAMA_TIMEOUT', 300))  # 5 minutos por padrão
+    
     GROK_API_KEY = os.getenv('GROK_API_KEY', '')
     
     # Configurações do servidor Flask

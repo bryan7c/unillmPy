@@ -9,6 +9,7 @@ Unillm é uma interface unificada para trabalhar com Modelos de Linguagem (LLMs)
 - **Tradução de Texto**: Realiza a tradução de um texto para um idioma alvo.
 - **Listagem de Modelos**: Retorna a lista de modelos disponíveis para cada provider.
 - **Processamento de Respostas**: Remove automaticamente o conteúdo entre tags <think></think> nas respostas do modelo deepseek-r1.
+- **Controle de Requisições por Origem**: Sistema que permite isolar e controlar requisições por origem, evitando que requisições de diferentes aplicações interfiram entre si.
 
 ## Provedores e Modelos Suportados
 
@@ -91,6 +92,68 @@ OLLAMA_API_KEY=suachave
 OLLAMA_BASE_URL=http://host.docker.internal:11434/api/
 GROQ_API_KEY=suachave
 ```
+
+## Controle de Requisições por Origem
+
+A aplicação possui um sistema de controle de requisições que permite isolar chamadas de diferentes origens, evitando que uma aplicação interfira nas requisições de outra.
+
+### Como Funciona
+
+- Cada requisição pode especificar uma origem de duas formas:
+  1. Através do header `X-Origin` (recomendado)
+  2. Através do parâmetro `origin` nas opções
+- Requisições da mesma origem são controladas em conjunto
+- Uma nova requisição da origem A cancela automaticamente requisições anteriores da origem A
+- Requisições de origens diferentes não interferem entre si
+- Timeout fixo de 10 minutos por requisição
+
+### Exemplo de Uso
+
+#### Usando Header (Recomendado)
+```bash
+# Usando curl
+curl -X POST \
+  -H "X-Origin: aplicacao_a" \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "ollama", "input": "Seu prompt aqui", "options": {"model": "llama3.2:latest"}}' \
+  http://localhost:3001/api/llm/generate-text
+```
+
+```python
+# Usando requests
+import requests
+
+headers = {
+    'X-Origin': 'aplicacao_a',
+    'Content-Type': 'application/json'
+}
+
+data = {
+    'provider': 'ollama',
+    'input': 'Seu prompt aqui',
+    'options': {'model': 'llama3.2:latest'}
+}
+
+response = requests.post('http://localhost:3001/api/llm/generate-text', 
+                        headers=headers, 
+                        json=data)
+```
+
+#### Usando Options (Alternativa)
+```python
+options = {
+    'origin': 'aplicacao_a',
+    'model': 'llama3.2:latest'
+}
+resultado = service.generate_text("Seu prompt aqui", options)
+```
+
+### Retrocompatibilidade
+
+- Aplicações existentes continuam funcionando sem modificações
+- Requisições sem origem especificada (sem header e sem opção) usam 'default' como origem
+- O header `X-Origin` tem prioridade sobre o parâmetro `origin` nas opções
+- O sistema de cancelamento funciona normalmente para requisições sem origem
 
 ## Configuração para Acesso em Rede
 
