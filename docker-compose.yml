@@ -21,3 +21,21 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+
+  gateway-api:
+    build:
+      context: ./gateway-api
+      dockerfile: Dockerfile.dev
+    container_name: omnibridge-api
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./gateway-api:/app
+      - /app/node_modules
+    env_file:
+      - ./gateway-api/.env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - redis
+    restart: always
