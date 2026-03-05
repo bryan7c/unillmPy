@@ -1,0 +1,17 @@
+model_list:
+  # Rota base do gateway, mascarando que usamos openrouter
+  - model_name: gateway-default-model
+    litellm_params:
+      model: openrouter/stepfun/step-3.5-flash:free
+      api_key: os.environ/OPENROUTER_API_KEY
+      # Opcional mas recomendado para não dar erro se falhar no OpenRouter
+      # max_retries: 2 
+
+litellm_settings:
+  # Permite chamadas vazias pra testar health-check sem gastar logs desnecessários
+  drop_params: true
+  cache: true 
+  cache_params:
+    type: redis
+    host: redis
+    port: 6379
