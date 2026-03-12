@@ -1,0 +1,35 @@
+name: Deploy OmniBridge AI API
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    # MUDANÇA CRÍTICA: 'self-hosted' direciona para o runner que você acabou de criar
+    runs-on: self-hosted 
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Build e Run OmniBridge
+        run: |
+          # 1. Parar e remover o container antigo se ele existir
+          docker stop omnibridge || true
+          docker rm omnibridge || true
+          
+          # 2. Buildar a imagem nova (usando o cache local para ser rápido)
+          docker build -t omnibridge:latest .
+          
+          # 3. Rodar o container
+          # Ajuste a porta se a sua API de IA usar algo diferente de 8000
+          docker run -d \
+            --name omnibridge \
+            --restart unless-stopped \
+            -p 8000:8000 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            omnibridge:latest
+
+      - name: Limpeza de Imagens Órfãs
+        run: docker image prune -f
