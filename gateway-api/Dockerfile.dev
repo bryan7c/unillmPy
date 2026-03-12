@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instalar dependências globais úteis para NestJS
+RUN npm install -g @nestjs/cli
+
+# Copiar arquivos de dependências
+COPY package*.json ./
+
+# Instalar dependências
+RUN npm install
+
+# Copiar o restante do código
+COPY . .
+
+# Expor a porta 3001
+EXPOSE 3001
+
+# Comando para iniciar em modo desenvolvimento com watch
+CMD ["npm", "run", "start:dev"]

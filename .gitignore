@@ -1,5 +1,4 @@
+gateway-api/node_modules
+gateway-api/coverage
+gateway-api/dist
 .env
-venv/
-__pycache__/
-__pycache__/
-gateway-api/node_modules/

@@ -1,23 +1,43 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  unillm:
-    image: unillm
-    build:
-      context: .
-      dockerfile: Dockerfile
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: omnibridge-litellm
     ports:
-      - "3001:3001"  # Porta padrão da aplicação
+      - "4000:4000"
     volumes:
-      - .:/app       # Monte o diretório atual no container
+      - ./litellm/config.yaml:/app/config.yaml
     env_file:
-      - .env
+      - ./.env
+    command: [ "--config", "/app/config.yaml", "--port", "4000", "--detailed_debug" ]
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: omnibridge-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  gateway-api:
+    build:
+      context: ./gateway-api
+      dockerfile: Dockerfile.dev
+    container_name: omnibridge-api
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./gateway-api:/app
+      - /app/node_modules
+      - ./litellm:/app/litellm
+    env_file:
+      - ./gateway-api/.env
     environment:
-      - FLASK_ENV=development
-      - FLASK_DEBUG=1 
-      # Força o uso de host.docker.internal para acessar o Ollama na máquina host
-      - OLLAMA_HOST=host.docker.internal
-    command: python app.py  # Usando o app.py diretamente para usar nossas configurações
-    restart: unless-stopped  # Política de reinício
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  # Necessário para acessar a máquina host em alguns sistemas
+      - NODE_ENV=development
+      - LITELLM_CONFIG_PATH=/app/litellm/config.yaml
+    depends_on:
+      - redis
+    restart: always
