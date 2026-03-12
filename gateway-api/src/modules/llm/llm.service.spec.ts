@@ -22,7 +22,7 @@ describe('LlmService', () => {
   beforeEach(() => {
     configServiceMock = {
       get: vi.fn((key: string, defaultVal?: string) => {
-        if (key === 'LITELLM_BASE_URL') return 'http://localhost:4000/v1';
+        if (key === 'LITELLM_BASE_URL') return 'http://localhost:4007/v1';
         if (key === 'LITELLM_API_KEY') return 'sk-mock-key';
         return defaultVal ?? null;
       }),

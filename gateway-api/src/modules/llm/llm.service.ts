@@ -18,7 +18,7 @@ export class LlmService {
     constructor(private readonly configService: ConfigService) {
         const baseURL = this.configService.get<string>(
             'LITELLM_BASE_URL',
-            'http://localhost:4000/v1',
+            'http://localhost:4007/v1',
         );
         const apiKey = this.configService.get<string>(
             'LITELLM_API_KEY',

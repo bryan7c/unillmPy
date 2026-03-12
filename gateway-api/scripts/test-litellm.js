@@ -5,7 +5,7 @@
  */
 
 async function testLiteLlmCache() {
-    const url = 'http://localhost:4000/v1/chat/completions';
+    const url = 'http://localhost:4007/v1/chat/completions';
     const payload = {
         model: 'gateway-default-model',
         messages: [

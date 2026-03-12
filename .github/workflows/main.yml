@@ -20,3 +20,7 @@ jobs:
 
       - name: Limpeza de cache e imagens antigas
         run: docker image prune -f
+
+      - name: Criar arquivo .env
+        run: |
+          echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" >> .env
