@@ -12,15 +12,20 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
+      - name: Criar arquivos .env
+        run: |
+          # .env da Raiz (LiteLLM)
+          echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" > .env
+          
+          # .env do Gateway API
+          echo "PORT=3001" > gateway-api/.env
+          echo "LITELLM_BASE_URL=http://localhost:4007/v1" >> gateway-api/.env
+          echo "LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }}" >> gateway-api/.env
+
       - name: Deploy da Stack Completa
         run: |
           # O '--build' força o Docker a ler o Dockerfile.dev se houver mudanças
-          # O '-d' roda em background (detached)
           docker compose up -d --build
 
       - name: Limpeza de cache e imagens antigas
         run: docker image prune -f
-
-      - name: Criar arquivo .env
-        run: |
-          echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" >> .env
