@@ -1,4 +1,4 @@
-name: Deploy OmniBridge AI API
+name: Deploy OmniBridge Stack
 
 on:
   push:
@@ -12,23 +12,11 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Build e Run OmniBridge
+      - name: Deploy da Stack Completa
         run: |
-          # 1. Limpeza preventiva
-          docker stop omnibridge || true && docker rm omnibridge || true
-          
-          # 2. Build com caminho específico
-          # -f indica onde está o Dockerfile
-          # o "." no final diz que o contexto de build é a raiz (para o Docker ver todas as pastas)
-          docker build -t omnibridge:latest -f gateway-api/Dockerfile .
-          
-          # 3. Execução
-          # Verifique se a porta da sua API dentro do container é a 8000
-          docker run -d \
-            --name omnibridge \
-            --restart unless-stopped \
-            -p 8000:8000 \
-            omnibridge:latest
+          # O '--build' força o Docker a ler o Dockerfile.dev se houver mudanças
+          # O '-d' roda em background (detached)
+          docker compose up -d --build
 
-      - name: Prune images
+      - name: Limpeza de cache e imagens antigas
         run: docker image prune -f
