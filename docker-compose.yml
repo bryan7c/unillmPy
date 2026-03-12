@@ -32,10 +32,12 @@ services:
     volumes:
       - ./gateway-api:/app
       - /app/node_modules
+      - ./litellm:/app/litellm
     env_file:
       - ./gateway-api/.env
     environment:
       - NODE_ENV=development
+      - LITELLM_CONFIG_PATH=/app/litellm/config.yaml
     depends_on:
       - redis
     restart: always
