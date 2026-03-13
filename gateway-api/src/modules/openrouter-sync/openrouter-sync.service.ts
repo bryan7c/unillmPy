@@ -78,7 +78,7 @@ export class OpenRouterSyncService implements OnModuleInit {
             const textSlugs = await this.fetchFreeModelsByModality('text');
             const textEntries: FreeModelEntry[] = textSlugs
                 .filter(slug => !specializedSlugs.has(`openrouter/${slug}`))
-                .map(slug => ({ id: `openrouter/${slug}`, poolName: MODALITY_TO_POOL.text }));
+                .map(slug => ({ id: slug.startsWith('openrouter/') ? slug : `openrouter/${slug}`, poolName: MODALITY_TO_POOL.text }));
 
             const allEntries = [...specializedEntries, ...textEntries];
 
@@ -161,7 +161,7 @@ export class OpenRouterSyncService implements OnModuleInit {
         for (const modality of modalities) {
             const slugs = await this.fetchFreeModelsByModality(modality);
             const poolName = MODALITY_TO_POOL[modality];
-            entries.push(...slugs.map(slug => ({ id: `openrouter/${slug}`, poolName })));
+            entries.push(...slugs.map(slug => ({ id: slug.startsWith('openrouter/') ? slug : `openrouter/${slug}`, poolName })));
             this.logger.log(`${modality}: ${slugs.length} modelos`);
         }
 

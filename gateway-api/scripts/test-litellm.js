@@ -7,7 +7,7 @@
 async function testLiteLlmCache() {
     const url = 'http://localhost:4007/v1/chat/completions';
     const payload = {
-        model: 'gateway-default-model',
+        model: 'free-models-text',
         messages: [
             {
                 role: 'user',

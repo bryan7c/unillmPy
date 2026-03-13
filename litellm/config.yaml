@@ -45,11 +45,11 @@ model_list:
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: free-models-text
     litellm_params:
-      model: openrouter/openrouter/hunter-alpha
+      model: openrouter/hunter-alpha
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: free-models-text
     litellm_params:
-      model: openrouter/openrouter/healer-alpha
+      model: openrouter/healer-alpha
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: free-models-text
     litellm_params:
@@ -62,10 +62,6 @@ model_list:
   - model_name: free-models-text
     litellm_params:
       model: openrouter/arcee-ai/trinity-large-preview
-      api_key: os.environ/OPENROUTER_API_KEY
-  - model_name: free-models-text
-    litellm_params:
-      model: openrouter/liquid/lfm-2.5-1.2b-thinking
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: free-models-text
     litellm_params:

@@ -19,7 +19,7 @@ jobs:
           
           # .env do Gateway API
           echo "PORT=3001" > gateway-api/.env
-          echo "LITELLM_BASE_URL=http://localhost:4007/v1" >> gateway-api/.env
+          echo "LITELLM_BASE_URL=http://litellm:4007/v1" >> gateway-api/.env
           echo "LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }}" >> gateway-api/.env
 
       - name: Deploy da Stack Completa
