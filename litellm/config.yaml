@@ -65,6 +65,10 @@ model_list:
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: free-models-text
     litellm_params:
+      model: openrouter/liquid/lfm-2.5-1.2b-thinking
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: free-models-text
+    litellm_params:
       model: openrouter/liquid/lfm-2.5-1.2b-instruct
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: free-models-text

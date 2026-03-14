@@ -2,9 +2,10 @@
  * @fileoverview Controller de conversa com modelos de IA
  * @description Expõe rotas de chat protegidas com validação Zod.
  *   A rota `/api/chat/free` garante uso exclusivo de modelos gratuitos via pools LiteLLM.
+ *   A rota `/api/chat/generate` oferece geração síncrona com metadata.
  *   Se um `model` é fornecido, o LiteLLM usa esse modelo diretamente.
  * @author Bryan Marvila
- * @version 2.1.0
+ * @version 3.0.0
  * @since 2026-03-04
  */
 import { Controller, Post, Body, UseGuards, BadRequestException, Res } from '@nestjs/common';
@@ -35,6 +36,8 @@ const messageSchema = z.object({
 const freeChatSchema = z.object({
     messages: z.array(messageSchema).min(1, 'Envie pelo menos uma mensagem.'),
     model: z.string().optional(),
+    system: z.string().optional(),
+    temperature: z.number().min(0).max(2).optional(),
 });
 
 @Controller('api/chat')
@@ -63,19 +66,19 @@ export class ChatController {
     /**
      * Endpoint de conversa gratuita com streaming SSE.
      * Usa exclusivamente pools de modelos gratuitos do LiteLLM.
-     * Se `model` for fornecido no body, usa o modelo específico.
+     * Suporta `system` prompt para injeção de contexto (RAG).
      * Aplica sliding window de 15 mensagens para otimizar contexto.
      */
     @Post('free')
     async streamFree(@Body() body: any, @Res() res: Response) {
-        console.log('[ChatController] Recebido pedido no /free:', JSON.stringify(body).slice(0, 500));
+        console.log('[ChatController] POST /free:', JSON.stringify(body).slice(0, 500));
         const parsed = freeChatSchema.safeParse(body);
         if (!parsed.success) {
-            console.error('[ChatController] Erro de validação Zod:', JSON.stringify(parsed.error.format()));
+            console.error('[ChatController] Validação:', JSON.stringify(parsed.error.format()));
             throw new BadRequestException(parsed.error.format());
         }
 
-        const { messages, model } = parsed.data;
+        const { messages, model, system, temperature } = parsed.data;
         const targetModel = model || 'free-models-text';
         const startTime = Date.now();
 
@@ -85,13 +88,12 @@ export class ChatController {
             ? messages.slice(-MAX_CONTEXT_MESSAGES)
             : messages;
 
-        console.log(`[ChatController] Mensagens: ${messages.length} total, ${windowedMessages.length} enviadas ao LLM`);
+        console.log(`[ChatController] Msgs: ${messages.length} total, ${windowedMessages.length} ao LLM`);
 
         let finishMeta: any = {};
 
         const result = this.llmService.streamFreeChat(
-            windowedMessages as any[],
-            model,
+            { messages: windowedMessages as any[], model, system, temperature },
             (finishResult) => {
                 const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
                 finishMeta = {
@@ -116,5 +118,31 @@ export class ChatController {
                 }
             },
         });
+    }
+
+    /**
+     * Endpoint síncrono de geração de texto.
+     * Retorna a resposta completa com metadata (modelo, tempo, uso de tokens).
+     * Ideal para pipelines de IA que não precisam de streaming (ex: geração de insights).
+     */
+    @Post('generate')
+    async generateChat(@Body() body: any) {
+        console.log('[ChatController] POST /generate:', JSON.stringify(body).slice(0, 500));
+        const parsed = freeChatSchema.safeParse(body);
+        if (!parsed.success) {
+            console.error('[ChatController] Validação:', JSON.stringify(parsed.error.format()));
+            throw new BadRequestException(parsed.error.format());
+        }
+
+        const { messages, model, system, temperature } = parsed.data;
+
+        const result = await this.llmService.generateFreeChat({
+            messages: messages as any[],
+            model,
+            system,
+            temperature,
+        });
+
+        return result;
     }
 }
