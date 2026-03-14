@@ -29,6 +29,8 @@ services:
     networks:
       - default
       - homelab_shared
+    volumes:
+      - ./litellm:/app/litellm
 
 networks:
   default:

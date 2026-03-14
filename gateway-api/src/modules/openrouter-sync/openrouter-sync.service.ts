@@ -3,13 +3,12 @@
  * @description Busca modelos gratuitos do OpenRouter via API interna do frontend
  *              e atualiza o config.yaml do LiteLLM com os pools de balanceamento.
  * @author Bryan Marvila
- * @version 3.0.0
- * @since 2026-03-06
+ * @version 1.0.0
+ * @since 2026-03-14
  */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { readFile, writeFile, rename, stat, access } from 'fs/promises';
-import { constants } from 'fs';
+import { readFile, writeFile, stat } from 'fs/promises';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 
@@ -53,20 +52,24 @@ export class OpenRouterSyncService implements OnModuleInit {
 
     async syncIfStale(): Promise<void> {
         try {
-            await access(this.configPath, constants.F_OK);
-        } catch {
-            this.logger.warn(`config.yaml não encontrado em ${this.configPath}.`);
-            return;
-        }
+            const stats = await stat(this.configPath).catch(() => null);
 
-        const { mtimeMs } = await stat(this.configPath);
-        const ageMs = Date.now() - mtimeMs;
+            if (!stats) {
+                this.logger.warn(`config.yaml não encontrado em ${this.configPath}. Sincronizando pela primeira vez...`);
+                await this.syncFreeModels();
+                return;
+            }
 
-        if (ageMs > TWENTY_FOUR_HOURS_MS) {
-            this.logger.log(`config.yaml desatualizado (${(ageMs / 3_600_000).toFixed(1)}h). Sincronizando...`);
-            await this.syncFreeModels();
-        } else {
-            this.logger.log(`config.yaml recente (${(ageMs / 3_600_000).toFixed(1)}h). Nenhuma ação.`);
+            const ageMs = Date.now() - stats.mtimeMs;
+
+            if (ageMs > TWENTY_FOUR_HOURS_MS) {
+                this.logger.log(`config.yaml desatualizado (${(ageMs / 3_600_000).toFixed(1)}h). Sincronizando...`);
+                await this.syncFreeModels();
+            } else {
+                this.logger.log(`config.yaml recente (${(ageMs / 3_600_000).toFixed(1)}h). Nenhuma ação.`);
+            }
+        } catch (error) {
+            this.logger.error(`Erro crítico no syncIfStale: ${error.message}`, error.stack);
         }
     }
 
@@ -123,22 +126,36 @@ export class OpenRouterSyncService implements OnModuleInit {
     }
 
     async persistToYaml(entries: FreeModelEntry[]): Promise<void> {
-        const fileContents = await readFile(this.configPath, 'utf8');
-        const config = yaml.load(fileContents) as Record<string, any>;
+        let fileContents = '';
+        try {
+            fileContents = await readFile(this.configPath, 'utf8');
+        } catch {
+            this.logger.log('Iniciando novo config.yaml...');
+            fileContents = 'model_list: []';
+        }
+
+        const config = yaml.load(fileContents) as Record<string, any> || { model_list: [] };
 
         if (!config || typeof config !== 'object') {
             throw new Error('YAML inválido.');
         }
 
         const preserved = (config.model_list ?? []).filter(
-            (m: any) => !m.model_name?.startsWith('free-models-'),
+            (m: any) => 
+                !m.model_name?.startsWith('free-models-') && 
+                !m.model_name?.startsWith('omni-free--') &&
+                !m.model_info?.pool,
         );
 
         const generated = entries.map(({ id, poolName }) => ({
-            model_name: poolName,
+            model_name: `omni-free--${id.replace('openrouter/', '')}`,
             litellm_params: {
                 model: id,
                 api_key: 'os.environ/OPENROUTER_API_KEY',
+            },
+            model_info: {
+                id: id.replace('openrouter/', ''),
+                pool: poolName
             },
         }));
 

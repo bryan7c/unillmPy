@@ -92,29 +92,28 @@ export class ChatController {
 
         let finishMeta: any = {};
 
-        const result = this.llmService.streamFreeChat(
-            { messages: windowedMessages as any[], model, system, temperature },
-            (finishResult) => {
-                const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
-                finishMeta = {
-                    model: finishResult.response?.modelId ?? targetModel,
-                    usage: finishResult.usage,
-                    responseTime: `${responseTime}s`,
-                };
-                console.log('[ChatController] Stream finalizado, meta:', JSON.stringify(finishMeta));
-            },
-        );
+        const { result, realModelId } = await this.llmService.streamFreeChat({
+            messages: windowedMessages as any[],
+            model,
+            system,
+            temperature,
+        });
 
-        result.pipeUIMessageStreamToResponse(res, {
+        (result as any).pipeUIMessageStreamToResponse(res, {
             messageMetadata: ({ part }: { part: any }) => {
                 if (part.type === 'start') {
                     return {
-                        model: targetModel,
+                        model: realModelId,
                         provider: 'litellm',
                     };
                 }
                 if (part.type === 'finish') {
-                    return finishMeta;
+                    const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                    return {
+                        model: realModelId,
+                        usage: part.usage,
+                        responseTime: `${responseTime}s`,
+                    };
                 }
             },
         });

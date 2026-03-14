@@ -12,6 +12,9 @@ import { ConfigService } from '@nestjs/config';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText, streamText } from 'ai';
 import type { StreamTextResult } from 'ai';
+import { readFile } from 'fs/promises';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
 
 const FREE_POOL_TEXT = 'free-models-text';
 
@@ -35,6 +38,8 @@ export class LlmService {
             'LITELLM_API_KEY',
             'sk-default-key',
         );
+
+        console.log(`[LlmService] Inicializado com LiteLLM em: ${baseURL}`);
 
         this.litellmProvider = createOpenAICompatible({
             name: 'litellm',
@@ -93,40 +98,61 @@ export class LlmService {
      * @param onFinish Callback chamado quando o stream finaliza
      * @returns Resultado do streamText com data stream compatível com Vercel AI SDK
      */
-    streamFreeChat(options: ChatOptions, onFinish?: (r: any) => void): StreamTextResult<any, any> {
+    private async getRealModelForPool(poolName: string): Promise<string> {
+        try {
+            const configPath = process.env.LITELLM_CONFIG_PATH || path.resolve(process.cwd(), 'litellm/config.yaml');
+            const fileContents = await readFile(configPath, 'utf8');
+            const config = yaml.load(fileContents) as any;
+            
+            if (!config?.model_list) return poolName;
+
+            const modelsInPool = config.model_list
+                .filter((m: any) => m.model_info?.pool === poolName)
+                .map((m: any) => m.model_name);
+
+            if (modelsInPool.length === 0) {
+                console.warn(`[LlmService] Nenhum modelo encontrado para o pool ${poolName}.`);
+                return poolName;
+            }
+
+            // Pick random model from pool
+            const selected = modelsInPool[Math.floor(Math.random() * modelsInPool.length)];
+            return selected;
+        } catch (error: any) {
+            console.error('[LlmService] Erro ao buscar modelos do pool:', error.message);
+            return poolName;
+        }
+    }
+
+    async streamFreeChat(options: ChatOptions): Promise<{ result: StreamTextResult<any, any>; realModelId: string }> {
         const { messages, model, system, temperature } = options;
-        const targetModel = model || FREE_POOL_TEXT;
+        const targetPool = model || FREE_POOL_TEXT;
         const coreMessages = this.normalizeToCoreMessages(messages);
 
-        console.log(`[LlmService] Stream com modelo: ${targetModel} | System: ${system ? 'Sim' : 'Não'}`);
+        const targetModel = await this.getRealModelForPool(targetPool);
+        const realModelId = targetModel.replace('omni-free--', '');
+        console.log(`[LlmService] Stream com modelo real: ${targetModel} (ID limpo: ${realModelId}) | Pool: ${targetPool}`);
 
-        return streamText({
+        const result = streamText({
             model: this.litellmProvider.chatModel(targetModel),
             messages: coreMessages,
             ...(system && { system }),
             ...(temperature !== undefined && { temperature }),
-            onFinish: (result) => {
-                console.log(`[LlmService] Stream finalizado. Uso:`, JSON.stringify(result.usage));
-                onFinish?.(result);
-            },
         });
+
+        return { result, realModelId };
     }
 
-    /**
-     * Geração síncrona de texto para aplicações que não precisam de streaming.
-     * Retorna texto completo + metadata (modelo, uso, tempo).
-     * @param options Opções de chat (messages, model, system, temperature)
-     * @returns Objeto com text e metadata
-     */
     async generateFreeChat(options: ChatOptions): Promise<{
         text: string;
         metadata: { model: string; usage: any; responseTime: string };
     }> {
         const { messages, model, system, temperature } = options;
-        const targetModel = model || FREE_POOL_TEXT;
+        const targetPool = model || FREE_POOL_TEXT;
         const coreMessages = this.normalizeToCoreMessages(messages);
 
-        console.log(`[LlmService] Generate com modelo: ${targetModel} | System: ${system ? 'Sim' : 'Não'}`);
+        const targetModel = await this.getRealModelForPool(targetPool);
+        console.log(`[LlmService] Generate com modelo real: ${targetModel} (Pool: ${targetPool}) | System: ${system ? 'Sim' : 'Não'}`);
 
         const startTime = Date.now();
 
@@ -145,15 +171,14 @@ export class LlmService {
             return {
                 text: result.text,
                 metadata: {
-                    model: result.response?.modelId ?? targetModel,
+                    model: targetModel.replace('omni-free--', ''),
                     usage: result.usage,
                     responseTime: `${responseTime}s`,
                 },
             };
         } catch (error: any) {
-            throw new InternalServerErrorException(
-                `Falha ao gerar resposta LLM. Erro: ${error.message || error}`,
-            );
+            console.error('[LlmService] Erro no generate:', error);
+            throw new InternalServerErrorException('Erro ao gerar resposta do LLM.');
         }
     }
 }
