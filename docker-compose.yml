@@ -18,8 +18,8 @@ services:
 
   gateway-api:
     build:
-      context: ./gateway-api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gateway-api/Dockerfile
     container_name: omnibridge-api
     ports:
       - "3001:3001"
