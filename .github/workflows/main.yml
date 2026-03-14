@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted 
+    runs-on: self-hosted
 
     steps:
       - name: Checkout código
@@ -14,18 +14,16 @@ jobs:
 
       - name: Criar arquivos .env
         run: |
-          # .env da Raiz (LiteLLM)
           echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" > .env
-          
-          # .env do Gateway API
+
           echo "PORT=3001" > gateway-api/.env
           echo "LITELLM_BASE_URL=http://litellm:4007/v1" >> gateway-api/.env
           echo "LITELLM_API_KEY=${{ secrets.LITELLM_API_KEY }}" >> gateway-api/.env
 
-      - name: Deploy da Stack Completa
+      - name: Build e deploy
         run: |
-          # O '--build' força o Docker a ler o Dockerfile.dev se houver mudanças
-          docker compose up -d --build
+          docker compose build --no-cache gateway-api
+          docker compose up -d
 
-      - name: Limpeza de cache e imagens antigas
+      - name: Limpeza de imagens antigas
         run: docker image prune -f
