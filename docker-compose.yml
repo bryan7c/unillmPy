@@ -11,16 +11,10 @@ services:
     env_file:
       - ./.env
     command: [ "--config", "/app/config.yaml", "--port", "4007", "--detailed_debug" ]
-    depends_on:
-      - redis
     restart: unless-stopped
-
-  redis:
-    image: redis:alpine
-    container_name: omnibridge-redis
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
+    networks:
+      - default
+      - homelab_shared
 
   gateway-api:
     build:
@@ -38,6 +32,15 @@ services:
     environment:
       - NODE_ENV=development
       - LITELLM_CONFIG_PATH=/app/litellm/config.yaml
-    depends_on:
-      - redis
     restart: always
+    networks:
+      - default
+      - homelab_shared
+
+networks:
+  default:
+    name: omnibridge_default
+    external: true
+  homelab_shared:
+    name: homelab_shared
+    external: true
