@@ -10,7 +10,7 @@ services:
       - ./litellm/config.yaml:/app/config.yaml
     env_file:
       - ./.env
-    command: [ "--config", "/app/config.yaml", "--port", "4007", "--detailed_debug" ]
+    command: [ "--config", "/app/config.yaml", "--port", "4007" ]
     restart: unless-stopped
     networks:
       - default
