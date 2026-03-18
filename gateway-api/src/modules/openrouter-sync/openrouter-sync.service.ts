@@ -80,8 +80,11 @@ export class OpenRouterSyncService implements OnModuleInit {
 
             const textSlugs = await this.fetchFreeModelsByModality('text');
             const textEntries: FreeModelEntry[] = textSlugs
-                .filter(slug => !specializedSlugs.has(`openrouter/${slug}`))
-                .map(slug => ({ id: slug.startsWith('openrouter/') ? slug : `openrouter/${slug}`, poolName: MODALITY_TO_POOL.text }));
+                .filter(slug => !specializedSlugs.has(slug))
+                .map(slug => ({
+                    id: slug.endsWith(':free') ? slug : `${slug}:free`,
+                    poolName: MODALITY_TO_POOL.text,
+                }));
 
             const allEntries = [...specializedEntries, ...textEntries];
 
@@ -141,25 +144,35 @@ export class OpenRouterSyncService implements OnModuleInit {
         }
 
         const preserved = (config.model_list ?? []).filter(
-            (m: any) => 
-                !m.model_name?.startsWith('free-models-') && 
-                !m.model_name?.startsWith('omni-free--') &&
-                !m.model_info?.pool,
+            (m: any) => !m.model_info?.pool,
         );
 
         const generated = entries.map(({ id, poolName }) => ({
-            model_name: `omni-free--${id.replace('openrouter/', '')}`,
+            model_name: id,
             litellm_params: {
-                model: id,
+                model: `openrouter/${id}`,
                 api_key: 'os.environ/OPENROUTER_API_KEY',
             },
             model_info: {
-                id: id.replace('openrouter/', ''),
-                pool: poolName
+                id,
+                pool: poolName,
             },
         }));
 
         config.model_list = [...preserved, ...generated];
+
+        // Gera fallbacks em ordem para o pool de texto:
+        // se o primeiro modelo falhar, o LiteLLM tenta o próximo automaticamente
+        const textModels = generated
+            .filter(m => m.model_info.pool === MODALITY_TO_POOL.text)
+            .map(m => m.model_name);
+
+        if (textModels.length > 1) {
+            config.router_settings = {
+                num_retries: 0,
+                fallbacks: [{ [textModels[0]]: textModels.slice(1) }],
+            };
+        }
 
         const newYaml = yaml.dump(config, { indent: 2, lineWidth: -1, noRefs: true });
         
@@ -178,7 +191,7 @@ export class OpenRouterSyncService implements OnModuleInit {
         for (const modality of modalities) {
             const slugs = await this.fetchFreeModelsByModality(modality);
             const poolName = MODALITY_TO_POOL[modality];
-            entries.push(...slugs.map(slug => ({ id: slug.startsWith('openrouter/') ? slug : `openrouter/${slug}`, poolName })));
+            entries.push(...slugs.map(slug => ({ id: slug, poolName })));
             this.logger.log(`${modality}: ${slugs.length} modelos`);
         }
 

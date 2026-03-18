@@ -99,9 +99,12 @@ export class ChatController {
             temperature,
         });
 
+        console.log(`[ChatController] Iniciando stream com realModelId: ${realModelId}`);
+
         (result as any).pipeUIMessageStreamToResponse(res, {
             messageMetadata: ({ part }: { part: any }) => {
                 if (part.type === 'start') {
+                    console.log(`[ChatController] Enviando metadata START com model: ${realModelId}`);
                     return {
                         model: realModelId,
                         provider: 'litellm',
@@ -109,6 +112,7 @@ export class ChatController {
                 }
                 if (part.type === 'finish') {
                     const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                    console.log(`[ChatController] Enviando metadata FINISH para ${realModelId}. Uso:`, part.usage);
                     return {
                         model: realModelId,
                         usage: part.usage,
