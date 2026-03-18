@@ -1,10 +1,94 @@
 model_list:
-  - model_name: openrouter/hunter-alpha
+  - model_name: sourceful/riverflow-v2-pro
     litellm_params:
-      model: openrouter/openrouter/hunter-alpha
+      model: openrouter/sourceful/riverflow-v2-pro
       api_key: os.environ/OPENROUTER_API_KEY
     model_info:
-      id: openrouter/hunter-alpha
+      id: sourceful/riverflow-v2-pro
+      pool: free-models-image
+  - model_name: sourceful/riverflow-v2-fast
+    litellm_params:
+      model: openrouter/sourceful/riverflow-v2-fast
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: sourceful/riverflow-v2-fast
+      pool: free-models-image
+  - model_name: black-forest-labs/flux.2-klein-4b
+    litellm_params:
+      model: openrouter/black-forest-labs/flux.2-klein-4b
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: black-forest-labs/flux.2-klein-4b
+      pool: free-models-image
+  - model_name: bytedance-seed/seedream-4.5
+    litellm_params:
+      model: openrouter/bytedance-seed/seedream-4.5
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: bytedance-seed/seedream-4.5
+      pool: free-models-image
+  - model_name: black-forest-labs/flux.2-max
+    litellm_params:
+      model: openrouter/black-forest-labs/flux.2-max
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: black-forest-labs/flux.2-max
+      pool: free-models-image
+  - model_name: sourceful/riverflow-v2-max-preview
+    litellm_params:
+      model: openrouter/sourceful/riverflow-v2-max-preview
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: sourceful/riverflow-v2-max-preview
+      pool: free-models-image
+  - model_name: sourceful/riverflow-v2-standard-preview
+    litellm_params:
+      model: openrouter/sourceful/riverflow-v2-standard-preview
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: sourceful/riverflow-v2-standard-preview
+      pool: free-models-image
+  - model_name: sourceful/riverflow-v2-fast-preview
+    litellm_params:
+      model: openrouter/sourceful/riverflow-v2-fast-preview
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: sourceful/riverflow-v2-fast-preview
+      pool: free-models-image
+  - model_name: black-forest-labs/flux.2-flex
+    litellm_params:
+      model: openrouter/black-forest-labs/flux.2-flex
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: black-forest-labs/flux.2-flex
+      pool: free-models-image
+  - model_name: black-forest-labs/flux.2-pro
+    litellm_params:
+      model: openrouter/black-forest-labs/flux.2-pro
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: black-forest-labs/flux.2-pro
+      pool: free-models-image
+  - model_name: nvidia/llama-nemotron-embed-vl-1b-v2
+    litellm_params:
+      model: openrouter/nvidia/llama-nemotron-embed-vl-1b-v2
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: nvidia/llama-nemotron-embed-vl-1b-v2
+      pool: free-models-embedding
+  - model_name: openrouter/hunter-alpha:free
+    litellm_params:
+      model: openrouter/openrouter/hunter-alpha:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: openrouter/hunter-alpha:free
+      pool: free-models-text
+  - model_name: openrouter/healer-alpha:free
+    litellm_params:
+      model: openrouter/openrouter/healer-alpha:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: openrouter/healer-alpha:free
       pool: free-models-text
   - model_name: nvidia/nemotron-3-super-120b-a12b:free
     litellm_params:
@@ -13,10 +97,211 @@ model_list:
     model_info:
       id: nvidia/nemotron-3-super-120b-a12b:free
       pool: free-models-text
+  - model_name: minimax/minimax-m2.5:free
+    litellm_params:
+      model: openrouter/minimax/minimax-m2.5:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: minimax/minimax-m2.5:free
+      pool: free-models-text
+  - model_name: stepfun/step-3.5-flash:free
+    litellm_params:
+      model: openrouter/stepfun/step-3.5-flash:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: stepfun/step-3.5-flash:free
+      pool: free-models-text
+  - model_name: arcee-ai/trinity-large-preview:free
+    litellm_params:
+      model: openrouter/arcee-ai/trinity-large-preview:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: arcee-ai/trinity-large-preview:free
+      pool: free-models-text
+  - model_name: liquid/lfm-2.5-1.2b-thinking:free
+    litellm_params:
+      model: openrouter/liquid/lfm-2.5-1.2b-thinking:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: liquid/lfm-2.5-1.2b-thinking:free
+      pool: free-models-text
+  - model_name: liquid/lfm-2.5-1.2b-instruct:free
+    litellm_params:
+      model: openrouter/liquid/lfm-2.5-1.2b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: liquid/lfm-2.5-1.2b-instruct:free
+      pool: free-models-text
+  - model_name: nvidia/nemotron-3-nano-30b-a3b:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-nano-30b-a3b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: nvidia/nemotron-3-nano-30b-a3b:free
+      pool: free-models-text
+  - model_name: arcee-ai/trinity-mini:free
+    litellm_params:
+      model: openrouter/arcee-ai/trinity-mini:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: arcee-ai/trinity-mini:free
+      pool: free-models-text
+  - model_name: nvidia/nemotron-nano-12b-v2-vl:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-nano-12b-v2-vl:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: nvidia/nemotron-nano-12b-v2-vl:free
+      pool: free-models-text
+  - model_name: qwen/qwen3-next-80b-a3b-instruct:free
+    litellm_params:
+      model: openrouter/qwen/qwen3-next-80b-a3b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: qwen/qwen3-next-80b-a3b-instruct:free
+      pool: free-models-text
+  - model_name: nvidia/nemotron-nano-9b-v2:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-nano-9b-v2:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: nvidia/nemotron-nano-9b-v2:free
+      pool: free-models-text
+  - model_name: openai/gpt-oss-120b:free
+    litellm_params:
+      model: openrouter/openai/gpt-oss-120b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: openai/gpt-oss-120b:free
+      pool: free-models-text
+  - model_name: openai/gpt-oss-20b:free
+    litellm_params:
+      model: openrouter/openai/gpt-oss-20b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: openai/gpt-oss-20b:free
+      pool: free-models-text
+  - model_name: z-ai/glm-4.5-air:free
+    litellm_params:
+      model: openrouter/z-ai/glm-4.5-air:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: z-ai/glm-4.5-air:free
+      pool: free-models-text
+  - model_name: qwen/qwen3-coder:free
+    litellm_params:
+      model: openrouter/qwen/qwen3-coder:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: qwen/qwen3-coder:free
+      pool: free-models-text
+  - model_name: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    litellm_params:
+      model: openrouter/cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+      pool: free-models-text
+  - model_name: google/gemma-3n-e2b-it:free
+    litellm_params:
+      model: openrouter/google/gemma-3n-e2b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: google/gemma-3n-e2b-it:free
+      pool: free-models-text
+  - model_name: google/gemma-3n-e4b-it:free
+    litellm_params:
+      model: openrouter/google/gemma-3n-e4b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: google/gemma-3n-e4b-it:free
+      pool: free-models-text
+  - model_name: qwen/qwen3-4b:free
+    litellm_params:
+      model: openrouter/qwen/qwen3-4b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: qwen/qwen3-4b:free
+      pool: free-models-text
+  - model_name: mistralai/mistral-small-3.1-24b-instruct:free
+    litellm_params:
+      model: openrouter/mistralai/mistral-small-3.1-24b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: mistralai/mistral-small-3.1-24b-instruct:free
+      pool: free-models-text
+  - model_name: google/gemma-3-4b-it:free
+    litellm_params:
+      model: openrouter/google/gemma-3-4b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: google/gemma-3-4b-it:free
+      pool: free-models-text
+  - model_name: google/gemma-3-12b-it:free
+    litellm_params:
+      model: openrouter/google/gemma-3-12b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: google/gemma-3-12b-it:free
+      pool: free-models-text
+  - model_name: google/gemma-3-27b-it:free
+    litellm_params:
+      model: openrouter/google/gemma-3-27b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: google/gemma-3-27b-it:free
+      pool: free-models-text
+  - model_name: meta-llama/llama-3.3-70b-instruct:free
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.3-70b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: meta-llama/llama-3.3-70b-instruct:free
+      pool: free-models-text
+  - model_name: meta-llama/llama-3.2-3b-instruct:free
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.2-3b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: meta-llama/llama-3.2-3b-instruct:free
+      pool: free-models-text
+  - model_name: nousresearch/hermes-3-llama-3.1-405b:free
+    litellm_params:
+      model: openrouter/nousresearch/hermes-3-llama-3.1-405b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      id: nousresearch/hermes-3-llama-3.1-405b:free
+      pool: free-models-text
 router_settings:
   num_retries: 0
   fallbacks:
-    - openrouter/hunter-alpha:
+    - openrouter/hunter-alpha:free:
+        - openrouter/healer-alpha:free
         - nvidia/nemotron-3-super-120b-a12b:free
+        - minimax/minimax-m2.5:free
+        - stepfun/step-3.5-flash:free
+        - arcee-ai/trinity-large-preview:free
+        - liquid/lfm-2.5-1.2b-thinking:free
+        - liquid/lfm-2.5-1.2b-instruct:free
+        - nvidia/nemotron-3-nano-30b-a3b:free
+        - arcee-ai/trinity-mini:free
+        - nvidia/nemotron-nano-12b-v2-vl:free
+        - qwen/qwen3-next-80b-a3b-instruct:free
+        - nvidia/nemotron-nano-9b-v2:free
+        - openai/gpt-oss-120b:free
+        - openai/gpt-oss-20b:free
+        - z-ai/glm-4.5-air:free
+        - qwen/qwen3-coder:free
+        - cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+        - google/gemma-3n-e2b-it:free
+        - google/gemma-3n-e4b-it:free
+        - qwen/qwen3-4b:free
+        - mistralai/mistral-small-3.1-24b-instruct:free
+        - google/gemma-3-4b-it:free
+        - google/gemma-3-12b-it:free
+        - google/gemma-3-27b-it:free
+        - meta-llama/llama-3.3-70b-instruct:free
+        - meta-llama/llama-3.2-3b-instruct:free
+        - nousresearch/hermes-3-llama-3.1-405b:free
 litellm_settings:
   set_model_in_response: true
